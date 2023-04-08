@@ -1,6 +1,6 @@
 # Workspace Provisioner
 
-A Carvel package for provisioning and configuring workspaces (namespaces or virtual clusters) with the necessary credentials, roles and limit ranges to work with the Kadras Engineering Platform.
+A Carvel package for provisioning and configuring workspaces (namespaces or virtual clusters) with the necessary credentials, roles and limit ranges to work with the Kadras [Engineering Platform](https://github.com/kadras-io/engineering-platform).
 
 ![Test Workflow](https://github.com/kadras-io/workspace-provisioner/actions/workflows/test.yml/badge.svg)
 ![Release Workflow](https://github.com/kadras-io/workspace-provisioner/actions/workflows/release.yml/badge.svg)
