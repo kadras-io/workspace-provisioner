@@ -1,0 +1,118 @@
+#@ load("@ytt:data","data")
+
+#@ def is_cosign_secret_available():
+#@   return data.values.cosign.secret.name != "" and data.values.cosign.secret.namespace != ""
+#@ end
+
+#@ def is_git_config_available():
+#@   return data.values.git.server != "" and data.values.git.credentials.username != "" and data.values.git.credentials.password != ""
+#@ end
+
+#@ for namespace in data.values.namespaces:
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ namespace.name
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+
+#! OCI Registry
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: #@ data.values.oci_registry.secret.name
+  namespace: #@ namespace.name
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+    kapp.k14s.io/create-strategy: fallback-on-update
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: e30K
+
+#! Git
+
+#@ if/end is_git_config_available():
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: #@ data.values.git.secret.name
+  namespace: #@ namespace.name
+  annotations:
+    tekton.dev/git-0: #@ data.values.git.server
+    kapp.k14s.io/create-strategy: fallback-on-update
+type: kubernetes.io/basic-auth
+stringData:
+  username: #@ data.values.git.credentials.username
+  password: #@ data.values.git.credentials.password
+
+#! Cosign
+
+#@ if/end is_cosign_secret_available():
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: #@ data.values.cosign.secret.name
+  namespace: #@ namespace.name
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+spec:
+  fromNamespace: #@ data.values.cosign.secret.namespace
+
+#! RBAC
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: #@ data.values.service_account
+  namespace: #@ namespace.name
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+secrets:
+  - name: #@ data.values.oci_registry.secret.name
+  #@ if/end is_git_config_available():
+  - name: #@ data.values.git.secret.name
+  #@ if/end is_cosign_secret_available():
+  - name: #@ data.values.cosign.secret.name
+imagePullSecrets:
+  - name: #@ data.values.oci_registry.secret.name
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-workload
+  namespace: #@ namespace.name
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
+subjects:
+  - kind: ServiceAccount
+    name: #@ data.values.service_account
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-deliverable
+  namespace: #@ namespace.name
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: #@ data.values.service_account
+
+#@ end
