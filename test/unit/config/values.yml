@@ -2,3 +2,4 @@
 oci_registry:
   secret:
     name: supply-chain-registry-credentials
+    namespace: kadras-packages

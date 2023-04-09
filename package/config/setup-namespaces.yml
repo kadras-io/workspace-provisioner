@@ -8,6 +8,31 @@
 #@   return data.values.git.server != "" and data.values.git.credentials.username != "" and data.values.git.credentials.password != ""
 #@ end
 
+#! SECRET EXPORTS
+
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: #@ data.values.oci_registry.secret.name
+  namespace: #@ data.values.oci_registry.secret.namespace
+spec:
+  toNamespaces:
+    - "*"
+
+#@ if/end is_cosign_secret_available():
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: #@ data.values.cosign.secret.name
+  namespace: #@ data.values.cosign.secret.namespace
+spec:
+  toNamespaces:
+    - "*"
+
+#! NAMESPACES
+
 #@ for namespace in data.values.namespaces:
 
 ---

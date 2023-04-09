@@ -109,12 +109,13 @@ The Workspace Provisioner package has the following configurable properties.
 | `namespaces` | `[]` | Configuration for the namespaces the platform will provision and manage. |
 | `service_account` | `default` | The `ServiceAccount` to be configured with credentials and roles in each workspace. |
 | `oci_registry.secret.name` | `""` | The name of the Secret holding the credentials to access the OCI registry. **Required**. |
+| `oci_registry.secret.namespace` | `""` | The namespace of the Secret holding the credentials to access the OCI registry. **Required**. |
 | `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. |
 | `cosign.secret.namespace` | `""` | The namespace of the Secret holding the Cosign key pair. |
 | `git.server` | `https://github.com` | The Git server hosting the Git repositories used in the GitOps workflows. |
 | `git.credentials.username` | `""` | The username to access the Git repositories. |
 | `git.credesntials.password` | `""` | The password to access the Git repositories. |
-| `git.secret.name` | `""` | The name of the Secret holding the Git credentials. |
+| `git.secret.name` | `supply-chain-git-credentials` | The name of the Secret holding the Git credentials. |
 
 </details>
 

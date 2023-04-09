@@ -16,6 +16,9 @@ oci_registry:
     #@schema/desc "The name of the Secret holding the credentials to access the OCI registry."
     #@schema/validation min_len=1
     name: ""
+    #@schema/desc "The namespace of the Secret holding the credentials to access the OCI registry."
+    #@schema/validation min_len=1
+    namespace: ""
 
 #@schema/desc "Settings for Cosign, used for signing and verifying OCI artifacts."
 cosign:
@@ -40,4 +43,4 @@ git:
   secret:
     #@schema/desc "The name of the Secret holding the Git credentials."
     #@schema/validation when=lambda _, ctx: ctx.root["git"]["credentials"]["username"] != "" and ctx.root["git"]["credentials"]["password"] != ""
-    name: ""
+    name: supply-chain-git-credentials
