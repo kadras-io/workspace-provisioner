@@ -18,8 +18,6 @@ metadata:
     secretgen.carvel.dev/image-pull-secret: ""
     kapp.k14s.io/create-strategy: fallback-on-update
 type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: e30K
 
 #! RBAC
 ---
