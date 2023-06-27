@@ -14,10 +14,8 @@ oci_registry:
   #@schema/desc "Configuration for the Secret holding the credentials to access the OCI registry."
   secret:
     #@schema/desc "The name of the Secret holding the credentials to access the OCI registry."
-    #@schema/validation min_len=1
     name: ""
     #@schema/desc "The namespace of the Secret holding the credentials to access the OCI registry."
-    #@schema/validation min_len=1
     namespace: ""
 
 #@schema/desc "Settings for Cosign, used for signing and verifying OCI artifacts."
@@ -32,15 +30,10 @@ cosign:
 #@schema/desc "Configuration to access the Git repositories used in the GitOps workflows."
 git:
   #@schema/desc "The Git server hosting the Git repositories used in the GitOps workflows."
-  server: https://github.com
-  #@schema/desc "Configuration for Git credentials."
-  credentials:
-    #@schema/desc "The username to access the Git repositories."
-    username: ""
-    #@schema/desc "The password to access the Git repositories."
-    password: ""
+  server: "https://github.com"
   #@schema/desc "Configuration for the Secret holding the Git credentials."
   secret:
     #@schema/desc "The name of the Secret holding the Git credentials."
-    #@schema/validation when=lambda _, ctx: ctx.root["git"]["credentials"]["username"] != "" and ctx.root["git"]["credentials"]["password"] != ""
-    name: supply-chain-git-credentials
+    name: ""
+    #@schema/desc "The namespace of the Secret holding the Git credentials."
+    namespace: ""

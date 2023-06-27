@@ -1,18 +1,18 @@
 # Workspace Provisioner
 
-A Carvel package for provisioning and configuring workspaces (namespaces or virtual clusters) with the necessary credentials, roles and limit ranges to work with the Kadras [Engineering Platform](https://github.com/kadras-io/engineering-platform).
-
 ![Test Workflow](https://github.com/kadras-io/workspace-provisioner/actions/workflows/test.yml/badge.svg)
 ![Release Workflow](https://github.com/kadras-io/workspace-provisioner/actions/workflows/release.yml/badge.svg)
-[![The SLSA Level 3 badge](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev/spec/v0.1/levels)
+[![The SLSA Level 3 badge](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev/spec/v1.0/levels)
 [![The Apache 2.0 license badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Follow us on Twitter](https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2)](https://twitter.com/kadrasIO)
+
+A Carvel package for provisioning and configuring workspaces (namespaces or virtual clusters) with the necessary credentials, roles and limit ranges to work with the Kadras [Engineering Platform](https://github.com/kadras-io/engineering-platform).
 
 ## 🚀&nbsp; Getting Started
 
 ### Prerequisites
 
-* Kubernetes 1.24+
+* Kubernetes 1.25+
 * Carvel [`kctrl`](https://carvel.dev/kapp-controller/docs/latest/install/#installing-kapp-controller-cli-kctrl) CLI.
 * Carvel [kapp-controller](https://carvel.dev/kapp-controller) deployed in your Kubernetes cluster. You can install it with Carvel [`kapp`](https://carvel.dev/kapp/docs/latest/install) (recommended choice) or `kubectl`.
 
@@ -30,10 +30,9 @@ Workspace Provisioner is used as part of the Kadras [Engineering Platform](https
 Add the Kadras [package repository](https://github.com/kadras-io/kadras-packages) to your Kubernetes cluster:
 
   ```shell
-  kubectl create namespace kadras-packages
   kctrl package repository add -r kadras-packages \
     --url ghcr.io/kadras-io/kadras-packages \
-    -n kadras-packages
+    -n kadras-packages --create-namespace
   ```
 
 <details><summary>Installation without package repository</summary>
@@ -86,6 +85,7 @@ The Workspace Provisioner package can be customized via a `values.yml` file.
   oci_registry:
     secret:
       name: supply-chain-registry-credentials
+      namespace: kadras-packages
   ```
 
 Reference the `values.yml` file from the `kctrl` command when installing or upgrading the package.
@@ -108,14 +108,13 @@ The Workspace Provisioner package has the following configurable properties.
 |-------|-------------------|-------------|
 | `namespaces` | `[]` | Configuration for the namespaces the platform will provision and manage. |
 | `service_account` | `default` | The `ServiceAccount` to be configured with credentials and roles in each workspace. |
-| `oci_registry.secret.name` | `""` | The name of the Secret holding the credentials to access the OCI registry. **Required**. |
-| `oci_registry.secret.namespace` | `""` | The namespace of the Secret holding the credentials to access the OCI registry. **Required**. |
+| `oci_registry.secret.name` | `""` | The name of the Secret holding the credentials to access the OCI registry. |
+| `oci_registry.secret.namespace` | `""` | The namespace of the Secret holding the credentials to access the OCI registry. |
 | `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. |
 | `cosign.secret.namespace` | `""` | The namespace of the Secret holding the Cosign key pair. |
-| `git.server` | `https://github.com` | The Git server hosting the Git repositories used in the GitOps workflows. |
-| `git.credentials.username` | `""` | The username to access the Git repositories. |
-| `git.credesntials.password` | `""` | The password to access the Git repositories. |
-| `git.secret.name` | `supply-chain-git-credentials` | The name of the Secret holding the Git credentials. |
+| `git.server` | `https://github.com` | The Git server hosting the Git repositories used by the platform. |
+| `git.secret.name` | `""` | The name of the Secret holding the Git credentials. |
+| `git.secret.namespace` | `""` | The namespace of the Secret holding the Git credentials. |
 
 </details>
 
@@ -129,6 +128,4 @@ This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE
 
 ## 🙏&nbsp; Acknowledgments
 
-This package is inspired by:
-
-* the [namespace setup](https://github.com/vrabbi/tap-oss/tree/main/packages/dev-ns-preperation) included in an example of Tanzu Application Platform OSS stack.
+This package is inspired by the [namespace setup](https://github.com/vrabbi/tap-oss/tree/main/packages/dev-ns-preperation) package developed by [Scott Rosenberg](https://vrabbi.cloud).

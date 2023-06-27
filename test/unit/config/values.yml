@@ -1,5 +1,21 @@
 ---
+namespaces:
+  - name: qui
+  - name: quo
+  - name: qua
+
 oci_registry:
   secret:
     name: supply-chain-registry-credentials
+    namespace: kadras-packages
+
+cosign:
+  secret:
+    name: supply-chain-cosign-key-pair
+    namespace: kadras-packages
+
+git:
+  server: https://github.com
+  secret:
+    name: supply-chain-git-credentials
     namespace: kadras-packages
