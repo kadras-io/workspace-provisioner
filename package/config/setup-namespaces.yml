@@ -1,15 +1,22 @@
 #@ load("@ytt:data","data")
 
+#@ image_pull_secret_name = "canonical-registry-credentials"
+
+#@ def is_oci_registry_secret_available():
+#@   return data.values.oci_registry.secret.name != "" and data.values.oci_registry.secret.namespace != ""
+#@ end
+
 #@ def is_cosign_secret_available():
 #@   return data.values.cosign.secret.name != "" and data.values.cosign.secret.namespace != ""
 #@ end
 
-#@ def is_git_config_available():
-#@   return data.values.git.server != "" and data.values.git.credentials.username != "" and data.values.git.credentials.password != ""
+#@ def is_git_secret_available():
+#@   return data.values.git.server != "" and data.values.git.secret.name != "" and data.values.git.secret.namespace != ""
 #@ end
 
 #! SECRET EXPORTS
 
+#@ if/end is_oci_registry_secret_available():
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
@@ -18,7 +25,9 @@ metadata:
   namespace: #@ data.values.oci_registry.secret.namespace
 spec:
   toNamespaces:
-    - "*"
+    #@ for namespace in data.values.namespaces:
+    - #@ namespace.name
+    #@ end
 
 #@ if/end is_cosign_secret_available():
 ---
@@ -29,7 +38,22 @@ metadata:
   namespace: #@ data.values.cosign.secret.namespace
 spec:
   toNamespaces:
-    - "*"
+    #@ for namespace in data.values.namespaces:
+    - #@ namespace.name
+    #@ end
+
+#@ if/end is_git_secret_available():
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: #@ data.values.git.secret.name
+  namespace: #@ data.values.git.secret.namespace
+spec:
+  toNamespaces:
+    #@ for namespace in data.values.namespaces:
+    - #@ namespace.name
+    #@ end
 
 #! NAMESPACES
 
@@ -43,13 +67,13 @@ metadata:
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 
-#! OCI Registry
+#! Image Pull Placeholder Secret (populated by secretgen-controller)
 
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: #@ data.values.oci_registry.secret.name
+  name: #@ image_pull_secret_name
   namespace: #@ namespace.name
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
@@ -58,22 +82,19 @@ type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
 
-#! Git
+#! OCI Registry
 
-#@ if/end is_git_config_available():
+#@ if/end is_oci_registry_secret_available():
 ---
-apiVersion: v1
-kind: Secret
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
 metadata:
-  name: #@ data.values.git.secret.name
+  name: #@ data.values.oci_registry.secret.name
   namespace: #@ namespace.name
   annotations:
-    tekton.dev/git-0: #@ data.values.git.server
     kapp.k14s.io/create-strategy: fallback-on-update
-type: kubernetes.io/basic-auth
-stringData:
-  username: #@ data.values.git.credentials.username
-  password: #@ data.values.git.credentials.password
+spec:
+  fromNamespace: #@ data.values.oci_registry.secret.namespace
 
 #! Cosign
 
@@ -89,6 +110,21 @@ metadata:
 spec:
   fromNamespace: #@ data.values.cosign.secret.namespace
 
+#! Git
+
+#@ if/end is_git_secret_available():
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: #@ data.values.git.secret.name
+  namespace: #@ namespace.name
+  annotations:
+    tekton.dev/git-0: #@ data.values.git.server
+    kapp.k14s.io/create-strategy: fallback-on-update
+spec:
+  fromNamespace: #@ data.values.git.secret.namespace
+
 #! RBAC
 
 ---
@@ -100,12 +136,15 @@ metadata:
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 secrets:
+  #@ if/end is_oci_registry_secret_available():
   - name: #@ data.values.oci_registry.secret.name
-  #@ if/end is_git_config_available():
-  - name: #@ data.values.git.secret.name
   #@ if/end is_cosign_secret_available():
   - name: #@ data.values.cosign.secret.name
+  #@ if/end is_git_secret_available():
+  - name: #@ data.values.git.secret.name
 imagePullSecrets:
+  - name: #@ image_pull_secret_name
+  #@ if/end is_oci_registry_secret_available():
   - name: #@ data.values.oci_registry.secret.name
 
 ---

@@ -7,7 +7,20 @@ metadata:
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 
+#! Image Pull Placeholder Secret
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: canonical-registry-credentials
+  namespace: test-default
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+    kapp.k14s.io/create-strategy: fallback-on-update
+type: kubernetes.io/dockerconfigjson
+
 #! OCI Registry
+
 ---
 apiVersion: v1
 kind: Secret
@@ -15,9 +28,30 @@ metadata:
   name: supply-chain-registry-credentials
   namespace: test-default
   annotations:
-    secretgen.carvel.dev/image-pull-secret: ""
     kapp.k14s.io/create-strategy: fallback-on-update
-type: kubernetes.io/dockerconfigjson
+
+#! Cosign
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supply-chain-cosign-key-pair
+  namespace: test-default
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+
+#! Git
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supply-chain-git-credentials
+  namespace: test-default
+  annotations:
+    tekton.dev/git-0: https://github.com
+    kapp.k14s.io/create-strategy: fallback-on-update
 
 #! RBAC
 ---
@@ -30,7 +64,10 @@ metadata:
     kapp.k14s.io/create-strategy: fallback-on-update
 secrets:
   - name: supply-chain-registry-credentials
+  - name: supply-chain-cosign-key-pair
+  - name: supply-chain-git-credentials
 imagePullSecrets:
+  - name: canonical-registry-credentials
   - name: supply-chain-registry-credentials
 
 ---

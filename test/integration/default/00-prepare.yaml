@@ -1,0 +1,43 @@
+# Namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kadras-packages
+
+#! OCI Registry
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supply-chain-registry-credentials
+  namespace: kadras-packages
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: e30K
+
+#! Cosign
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supply-chain-cosign-key-pair
+  namespace: kadras-packages
+stringData:
+  cosign.key: key
+  cosign.password: pass
+  cosign.pub: pub
+
+#! Git
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: supply-chain-git-credentials 
+  namespace: kadras-packages
+stringData:
+  username: user
+  password: pass
