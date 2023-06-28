@@ -138,10 +138,10 @@ metadata:
 secrets:
   #@ if/end is_oci_registry_secret_available():
   - name: #@ data.values.oci_registry.secret.name
-  #@ if/end is_git_secret_available():
-  - name: #@ data.values.git.secret.name
   #@ if/end is_cosign_secret_available():
   - name: #@ data.values.cosign.secret.name
+  #@ if/end is_git_secret_available():
+  - name: #@ data.values.git.secret.name
 imagePullSecrets:
   - name: #@ image_pull_secret_name
   #@ if/end is_oci_registry_secret_available():
