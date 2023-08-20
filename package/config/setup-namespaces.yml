@@ -25,6 +25,7 @@ metadata:
   namespace: #@ data.values.oci_registry.secret.namespace
 spec:
   toNamespaces:
+    - kpack #! Used by kpack to publish Buildpacks artifacts. 
     #@ for namespace in data.values.namespaces:
     - #@ namespace.name
     #@ end
