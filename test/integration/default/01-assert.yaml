@@ -58,7 +58,7 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: default
+  name: supply-chain
   namespace: test-default
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
@@ -74,30 +74,30 @@ imagePullSecrets:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: default-workload
+  name: supply-chain-workload
   namespace: test-default
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: workload
+  name: supply-chain-workload
 subjects:
   - kind: ServiceAccount
-    name: default
+    name: supply-chain
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: default-deliverable
+  name: supply-chain-deliverable
   namespace: test-default
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: deliverable
+  name: supply-chain-deliverable
 subjects:
   - kind: ServiceAccount
-    name: default
+    name: supply-chain
