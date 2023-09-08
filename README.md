@@ -12,7 +12,7 @@ A Carvel package for provisioning and configuring workspaces (namespaces or virt
 
 ### Prerequisites
 
-* Kubernetes 1.25+
+* Kubernetes 1.26+
 * Carvel [`kctrl`](https://carvel.dev/kapp-controller/docs/latest/install/#installing-kapp-controller-cli-kctrl) CLI.
 * Carvel [kapp-controller](https://carvel.dev/kapp-controller) deployed in your Kubernetes cluster. You can install it with Carvel [`kapp`](https://carvel.dev/kapp/docs/latest/install) (recommended choice) or `kubectl`.
 
@@ -107,7 +107,7 @@ The Workspace Provisioner package has the following configurable properties.
 | Config | Default | Description |
 |-------|-------------------|-------------|
 | `namespaces` | `[]` | Configuration for the namespaces the platform will provision and manage. |
-| `service_account` | `default` | The `ServiceAccount` to be configured with credentials and roles in each workspace. |
+| `service_account` | `supply-chain` | The `ServiceAccount` to be configured with credentials and roles in each workspace. |
 | `oci_registry.secret.name` | `""` | The name of the Secret holding the credentials to access the OCI registry. |
 | `oci_registry.secret.namespace` | `""` | The namespace of the Secret holding the credentials to access the OCI registry. |
 | `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. |

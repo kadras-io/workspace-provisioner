@@ -7,7 +7,7 @@ namespaces:
   - name: ""
 
 #@schema/desc "The `ServiceAccount` to be configured with credentials and roles in each workspace."
-service_account: default
+service_account: supply-chain
 
 #@schema/desc "Settings for the OCI registry that the workspace will use."
 oci_registry:
