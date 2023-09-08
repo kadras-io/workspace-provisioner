@@ -126,7 +126,7 @@ metadata:
 spec:
   fromNamespace: #@ data.values.git.secret.namespace
 
-#! RBAC
+#! Supply Chains RBAC
 
 ---
 apiVersion: v1
@@ -179,5 +179,28 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: #@ data.values.service_account
+
+#! GitOps RBAC
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitops-reconciler
+  namespace: #@ namespace.name
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitops-reconciler
+  namespace: #@ namespace.name
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: gitops-reconciler
 
 #@ end
