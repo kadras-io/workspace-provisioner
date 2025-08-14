@@ -4,8 +4,8 @@ namespaces:
   - name: quo
   - name: qua
 
-oci_registry:
-  secret:
+oci:
+  pull_secret:
     name: supply-chain-registry-credentials
     namespace: kadras-system
 

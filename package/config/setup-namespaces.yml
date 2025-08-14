@@ -2,8 +2,8 @@
 
 #@ image_pull_secret_name = "canonical-registry-credentials"
 
-#@ def is_oci_registry_secret_available():
-#@   return data.values.oci_registry.secret.name != "" and data.values.oci_registry.secret.namespace != ""
+#@ def is_oci_pull_secret_available():
+#@   return data.values.oci.pull_secret.name != "" and data.values.oci.pull_secret.namespace != ""
 #@ end
 
 #@ def is_cosign_secret_available():
@@ -16,16 +16,15 @@
 
 #! SECRET EXPORTS
 
-#@ if/end is_oci_registry_secret_available():
+#@ if/end is_oci_pull_secret_available():
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
 metadata:
-  name: #@ data.values.oci_registry.secret.name
-  namespace: #@ data.values.oci_registry.secret.namespace
+  name: #@ data.values.oci.pull_secret.name
+  namespace: #@ data.values.oci.pull_secret.namespace
 spec:
   toNamespaces:
-    - kpack #! Used by kpack to publish Buildpacks artifacts. 
     #@ for namespace in data.values.namespaces:
     - #@ namespace.name
     #@ end
@@ -83,20 +82,6 @@ type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
 
-#! OCI Registry
-
-#@ if/end is_oci_registry_secret_available():
----
-apiVersion: secretgen.carvel.dev/v1alpha1
-kind: SecretImport
-metadata:
-  name: #@ data.values.oci_registry.secret.name
-  namespace: #@ namespace.name
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
-spec:
-  fromNamespace: #@ data.values.oci_registry.secret.namespace
-
 #! Cosign
 
 #@ if/end is_cosign_secret_available():
@@ -137,16 +122,12 @@ metadata:
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
 secrets:
-  #@ if/end is_oci_registry_secret_available():
-  - name: #@ data.values.oci_registry.secret.name
   #@ if/end is_cosign_secret_available():
   - name: #@ data.values.cosign.secret.name
   #@ if/end is_git_secret_available():
   - name: #@ data.values.git.secret.name
 imagePullSecrets:
   - name: #@ image_pull_secret_name
-  #@ if/end is_oci_registry_secret_available():
-  - name: #@ data.values.oci_registry.secret.name
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

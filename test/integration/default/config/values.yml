@@ -9,8 +9,8 @@ stringData:
     namespaces:
       - name: test-default
  
-    oci_registry:
-      secret:
+    oci:
+      pull_secret:
         name: supply-chain-registry-credentials
         namespace: kadras-system
 

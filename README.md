@@ -82,8 +82,8 @@ The Workspace Provisioner package can be customized via a `values.yml` file.
   - name: qa
   - name: staging
 
-  oci_registry:
-    secret:
+  oci:
+    pull_secret:
       name: supply-chain-registry-credentials
       namespace: kadras-system
   ```
@@ -108,8 +108,8 @@ The Workspace Provisioner package has the following configurable properties.
 |-------|-------------------|-------------|
 | `namespaces` | `[]` | Configuration for the namespaces the platform will provision and manage. |
 | `service_account` | `supply-chain` | The `ServiceAccount` to be configured with credentials and roles in each workspace. |
-| `oci_registry.secret.name` | `""` | The name of the Secret holding the credentials to access the OCI registry. |
-| `oci_registry.secret.namespace` | `""` | The namespace of the Secret holding the credentials to access the OCI registry. |
+| `oci.pull_secret.name` | `""` | The name of the Secret holding the credentials to pull images from the OCI registry. |
+| `oci.pull_secret.namespace` | `""` | The namespace of the Secret holding the credentials to pull images from the OCI registry. |
 | `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. |
 | `cosign.secret.namespace` | `""` | The namespace of the Secret holding the Cosign key pair. |
 | `git.server` | `https://github.com` | The Git server hosting the Git repositories used by the platform. |

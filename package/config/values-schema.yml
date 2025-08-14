@@ -9,13 +9,13 @@ namespaces:
 #@schema/desc "The `ServiceAccount` to be configured with credentials and roles in each workspace."
 service_account: supply-chain
 
-#@schema/desc "Settings for the OCI registry that the workspace will use."
-oci_registry:
-  #@schema/desc "Configuration for the Secret holding the credentials to access the OCI registry."
-  secret:
-    #@schema/desc "The name of the Secret holding the credentials to access the OCI registry."
+#@schema/desc "Settings for accessing the OCI registry that the workspace will use."
+oci:
+  #@schema/desc "Configuration for the Secret holding the credentials to pull images from the OCI registry."
+  pull_secret:
+    #@schema/desc "The name of the Secret holding the credentials to pull images from the OCI registry."
     name: ""
-    #@schema/desc "The namespace of the Secret holding the credentials to access the OCI registry."
+    #@schema/desc "The namespace of the Secret holding the credentials to pull images from the OCI registry."
     namespace: ""
 
 #@schema/desc "Settings for Cosign, used for signing and verifying OCI artifacts."
