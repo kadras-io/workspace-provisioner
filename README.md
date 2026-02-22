@@ -112,7 +112,7 @@ The Workspace Provisioner package has the following configurable properties.
 | `oci.pull_secret.namespace` | `""` | The namespace of the Secret holding the credentials to pull images from the OCI registry. |
 | `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. |
 | `cosign.secret.namespace` | `""` | The namespace of the Secret holding the Cosign key pair. |
-| `git.server` | `https://github.com` | The Git server hosting the Git repositories used by the platform. |
+| `git.server` | `https://github.com` | The Git server hosting the Git repositories used in the GitOps workflows. |
 | `git.secret.name` | `""` | The name of the Secret holding the Git credentials. |
 | `git.secret.namespace` | `""` | The namespace of the Secret holding the Git credentials. |
 
