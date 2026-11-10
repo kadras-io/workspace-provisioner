@@ -1,0 +1,3 @@
+# expected: an HTTP or HTTPS URL
+git:
+  server: github.com

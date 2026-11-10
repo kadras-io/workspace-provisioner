@@ -1,0 +1,73 @@
+---
+# Without credentials, each workspace gets a namespace, an empty placeholder for the OCI registry credentials, and the ServiceAccounts with their roles.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels:
+    app.kubernetes.io/component: workspace-provisioner
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: canonical-registry-credentials
+  namespace: dev
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+    kapp.k14s.io/create-strategy: fallback-on-update
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supply-chain
+  namespace: dev
+  labels:
+    app.kubernetes.io/component: workspace-provisioner
+imagePullSecrets:
+  - name: canonical-registry-credentials
+(length(secrets)): 0
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: supply-chain-workload
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: supply-chain-workload
+subjects:
+  - kind: ServiceAccount
+    name: supply-chain
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: supply-chain-deliverable
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: supply-chain-deliverable
+subjects:
+  - kind: ServiceAccount
+    name: supply-chain
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitops-reconciler
+  namespace: dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitops-reconciler
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: gitops-reconciler

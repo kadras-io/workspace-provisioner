@@ -1,0 +1,4 @@
+# expected: unique namespace names
+namespaces:
+  - name: dev
+  - name: dev

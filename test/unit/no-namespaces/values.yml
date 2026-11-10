@@ -1,0 +1,5 @@
+# With no namespaces, nothing is rendered, not even the SecretExports for the credentials.
+oci:
+  pull_secret:
+    name: registry-credentials
+    namespace: kadras-system

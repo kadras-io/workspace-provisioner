@@ -7,8 +7,8 @@ metadata:
 stringData:
   values.yaml: |
     namespaces:
-      - name: test-default
- 
+      - name: test-full
+
     oci:
       pull_secret:
         name: supply-chain-registry-credentials

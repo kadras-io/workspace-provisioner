@@ -1,0 +1,3 @@
+# expected: a valid DNS label
+namespaces:
+  - name: Dev_Team

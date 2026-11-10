@@ -1,0 +1,24 @@
+---
+# Uninstalling the package deletes the workspace namespace and the SecretExports, but not the shared credentials.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-full
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-registry-credentials
+  namespace: kadras-system
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-cosign-key-pair
+  namespace: kadras-system
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-git-credentials
+  namespace: kadras-system

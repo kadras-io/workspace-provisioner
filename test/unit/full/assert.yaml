@@ -1,0 +1,53 @@
+---
+# Each credential is exported to all the workspaces.
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: registry-credentials
+  namespace: kadras-system
+spec:
+  toNamespaces: [dev, prod]
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: cosign-key-pair
+  namespace: kadras-system
+spec:
+  toNamespaces: [dev, prod]
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: git-credentials
+  namespace: kadras-system
+spec:
+  toNamespaces: [dev, prod]
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: git-credentials
+  namespace: prod
+  annotations:
+    tekton.dev/git-0: https://github.com
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supply-chain
+  namespace: dev
+secrets:
+  - name: cosign-key-pair
+  - name: git-credentials
+imagePullSecrets:
+  - name: canonical-registry-credentials
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supply-chain
+  namespace: prod
+secrets:
+  - name: cosign-key-pair
+  - name: git-credentials

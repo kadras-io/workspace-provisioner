@@ -1,0 +1,29 @@
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: git-credentials
+  namespace: kadras-system
+spec:
+  toNamespaces:
+    - dev
+---
+# The Tekton annotation scopes the credentials to the Git server.
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport
+metadata:
+  name: git-credentials
+  namespace: dev
+  annotations:
+    tekton.dev/git-0: https://gitlab.com
+    kapp.k14s.io/create-strategy: fallback-on-update
+spec:
+  fromNamespace: kadras-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supply-chain
+  namespace: dev
+secrets:
+  - name: git-credentials

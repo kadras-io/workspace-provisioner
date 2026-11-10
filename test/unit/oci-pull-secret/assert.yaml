@@ -1,0 +1,29 @@
+---
+# The OCI registry credentials are exported to all the workspaces, where secretgen-controller merges them into the placeholder Secret.
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: registry-credentials
+  namespace: kadras-system
+  labels:
+    app.kubernetes.io/component: workspace-provisioner
+spec:
+  toNamespaces:
+    - dev
+    - prod
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: canonical-registry-credentials
+  namespace: dev
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: canonical-registry-credentials
+  namespace: prod
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""

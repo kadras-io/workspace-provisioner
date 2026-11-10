@@ -1,0 +1,14 @@
+#@ load("@ytt:data", "data")
+#@ load("/lib/workspace.star", "adopt_annotations", "labels")
+
+#! The namespace of each workspace. An existing namespace is adopted rather than recreated.
+
+#@ for namespace in data.values.namespaces:
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: #@ namespace.name
+  labels: #@ labels()
+  annotations: #@ adopt_annotations()
+#@ end

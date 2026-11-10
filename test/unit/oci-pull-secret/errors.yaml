@@ -1,0 +1,4 @@
+---
+# The placeholder Secret imports the credentials, without a SecretImport.
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport

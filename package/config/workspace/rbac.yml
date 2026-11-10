@@ -1,0 +1,67 @@
+#@ load("@ytt:data", "data")
+#@ load("/lib/workspace.star", "adopt_annotations", "image_pull_secret_name", "is_cosign_secret_set", "is_git_secret_set", "labels")
+
+#! The ServiceAccounts of each workspace, with their credentials and roles.
+
+#@ for namespace in data.values.namespaces:
+
+#! The supply chains run with this ServiceAccount, bound to the ClusterRoles provided by the Kadras Engineering Platform.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: #@ data.values.service_account
+  namespace: #@ namespace.name
+  labels: #@ labels()
+  annotations: #@ adopt_annotations()
+secrets:
+  #@ if/end is_cosign_secret_set():
+  - name: #@ data.values.cosign.secret.name
+  #@ if/end is_git_secret_set():
+  - name: #@ data.values.git.secret.name
+imagePullSecrets:
+  - name: #@ image_pull_secret_name
+
+#@ for role in ["supply-chain-workload", "supply-chain-deliverable"]:
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: #@ role
+  namespace: #@ namespace.name
+  labels: #@ labels()
+  annotations: #@ adopt_annotations()
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: #@ role
+subjects:
+  - kind: ServiceAccount
+    name: #@ data.values.service_account
+#@ end
+
+#! The GitOps tools deploy the workloads in the workspace with this ServiceAccount.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitops-reconciler
+  namespace: #@ namespace.name
+  labels: #@ labels()
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitops-reconciler
+  namespace: #@ namespace.name
+  labels: #@ labels()
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: gitops-reconciler
+
+#@ end

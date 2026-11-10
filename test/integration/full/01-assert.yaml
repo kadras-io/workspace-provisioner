@@ -1,112 +1,111 @@
-# Namespace
+---
+# The credentials are exported to the workspace...
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-registry-credentials
+  namespace: kadras-system
+spec:
+  toNamespaces:
+    - test-full
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-cosign-key-pair
+  namespace: kadras-system
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+metadata:
+  name: supply-chain-git-credentials
+  namespace: kadras-system
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: test-default
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
-
-#! Image Pull Placeholder Secret
+  name: test-full
+  labels:
+    app.kubernetes.io/component: workspace-provisioner
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: canonical-registry-credentials
-  namespace: test-default
+  namespace: test-full
   annotations:
     secretgen.carvel.dev/image-pull-secret: ""
-    kapp.k14s.io/create-strategy: fallback-on-update
 type: kubernetes.io/dockerconfigjson
-
-#! Cosign
-
 ---
+# ...where secretgen-controller imports them into Secrets.
 apiVersion: v1
 kind: Secret
 metadata:
   name: supply-chain-cosign-key-pair
-  namespace: test-default
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
-
-#! Git
-
+  namespace: test-full
+data:
+  cosign.key: a2V5
+  cosign.password: cGFzcw==
+  cosign.pub: cHVi
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: supply-chain-git-credentials
-  namespace: test-default
-  annotations:
-    tekton.dev/git-0: https://github.com
-    kapp.k14s.io/create-strategy: fallback-on-update
-
-#! Supply Chains RBAC
+  namespace: test-full
+data:
+  username: dXNlcg==
+  password: cGFzcw==
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: supply-chain
-  namespace: test-default
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
+  namespace: test-full
 secrets:
   - name: supply-chain-cosign-key-pair
   - name: supply-chain-git-credentials
 imagePullSecrets:
   - name: canonical-registry-credentials
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: supply-chain-workload
-  namespace: test-default
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
+  namespace: test-full
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: supply-chain-workload
 subjects:
   - kind: ServiceAccount
     name: supply-chain
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: supply-chain-deliverable
-  namespace: test-default
-  annotations:
-    kapp.k14s.io/create-strategy: fallback-on-update
+  namespace: test-full
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: supply-chain-deliverable
 subjects:
   - kind: ServiceAccount
     name: supply-chain
-
-#! GitOps RBAC
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: gitops-reconciler
-  namespace: test-default
-
+  namespace: test-full
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: gitops-reconciler
-  namespace: test-default
+  namespace: test-full
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: gitops-reconciler
+  - kind: ServiceAccount
+    name: gitops-reconciler

@@ -1,12 +1,9 @@
-# Namespace
 ---
+# The credentials shared with the workspaces, stored in a central namespace.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: kadras-system
-
-#! OCI Registry
-
 ---
 apiVersion: v1
 kind: Secret
@@ -16,9 +13,6 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
-
-#! Cosign
-
 ---
 apiVersion: v1
 kind: Secret
@@ -29,14 +23,11 @@ stringData:
   cosign.key: key
   cosign.password: pass
   cosign.pub: pub
-
-#! Git
-
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: supply-chain-git-credentials 
+  name: supply-chain-git-credentials
   namespace: kadras-system
 stringData:
   username: user

@@ -1,0 +1,7 @@
+namespaces:
+  - name: dev
+git:
+  server: https://gitlab.com
+  secret:
+    name: git-credentials
+    namespace: kadras-system

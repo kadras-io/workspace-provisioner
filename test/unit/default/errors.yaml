@@ -1,0 +1,7 @@
+---
+# No credentials are shared with the workspace.
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretExport
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretImport

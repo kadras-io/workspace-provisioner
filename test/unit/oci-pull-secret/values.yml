@@ -1,0 +1,7 @@
+namespaces:
+  - name: dev
+  - name: prod
+oci:
+  pull_secret:
+    name: registry-credentials
+    namespace: kadras-system
