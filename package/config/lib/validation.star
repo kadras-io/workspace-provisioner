@@ -9,15 +9,6 @@ def is_dns_label(value):
   return len(value) <= 63 and regexp.match("^" + _dns_label + "$", value)
 end
 
-def is_dns_subdomain(value):
-  return len(value) <= 253 and regexp.match("^" + _dns_label + "(\\." + _dns_label + ")*$", value)
-end
-
-# An HTTP or HTTPS URL, like `https://github.com`.
-def is_http_url(value):
-  return regexp.match("^https?://[^\\s/]+(/\\S*)?$", value)
-end
-
 # A reference to a Secret in another namespace, with both `name` and `namespace` set, or neither.
 def is_secret_ref_complete(ref):
   return (ref["name"] == "") == (ref["namespace"] == "")

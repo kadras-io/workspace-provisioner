@@ -1,0 +1,5 @@
+# expected: one of ["", "restricted", "baseline", "privileged"]
+---
+namespaces:
+  - name: dev
+    pod_security: strict

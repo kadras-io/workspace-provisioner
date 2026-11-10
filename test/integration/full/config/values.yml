@@ -8,19 +8,16 @@ stringData:
   values.yaml: |
     namespaces:
       - name: test-full
+        members:
+          - kind: Group
+            name: team-a
 
     oci:
       pull_secret:
-        name: supply-chain-registry-credentials
-        namespace: kadras-system
-
-    cosign:
-      secret:
-        name: supply-chain-cosign-key-pair
+        name: registry-credentials
         namespace: kadras-system
 
     git:
-      server: https://github.com
       secret:
-        name: supply-chain-git-credentials
+        name: git-credentials
         namespace: kadras-system

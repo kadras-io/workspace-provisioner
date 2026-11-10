@@ -1,0 +1,7 @@
+# expected: one of ["admin", "edit", "view"]
+---
+namespaces:
+  - name: dev
+    members:
+      - name: team-a
+        role: cluster-admin

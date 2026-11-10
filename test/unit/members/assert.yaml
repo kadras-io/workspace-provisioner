@@ -1,0 +1,42 @@
+---
+# The members are bound to the Kubernetes default roles, with a RoleBinding for each role. Groups and `edit` are the defaults.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-edit
+  namespace: dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: team-a
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: jane@example.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-admin
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: Group
+    name: team-a-leads
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-view
+  namespace: dev
+roleRef:
+  kind: ClusterRole
+  name: view
+subjects:
+  - kind: User
+    name: auditor@example.com

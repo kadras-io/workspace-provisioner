@@ -5,3 +5,15 @@ kind: SecretExport
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretImport
+---
+# Without members, the only RoleBinding is the GitOps one.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  (starts_with(name, 'workspace-')): true
+---
+# Nothing is bound to the cluster-admin ClusterRole.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+roleRef:
+  name: cluster-admin

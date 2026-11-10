@@ -12,9 +12,10 @@ kctrl package installed update -i workspace-provisioner -v ${VERSION} -n kadras-
 kctrl package installed delete -i workspace-provisioner -n kadras-system
 ```
 
-> **Warning**
-> Uninstalling the package deletes all the workspace namespaces, including the workloads running in them.
+Uninstalling the package keeps the workspace namespaces, with the workloads running in them and their `default` ServiceAccounts. It deletes the `gitops-reconciler` ServiceAccount, the RoleBindings of the members, the imported credentials, and the SecretExports in the central namespace. The shared credentials themselves are kept.
 
-The same happens to a single workspace when its namespace is removed from `namespaces`.
+The same happens to a single workspace when its namespace is removed from `namespaces`. To delete a workspace with everything in it, delete its namespace explicitly.
 
-The namespaces that existed before the package was installed are adopted, and deleted as well.
+```shell
+kubectl delete namespace dev
+```

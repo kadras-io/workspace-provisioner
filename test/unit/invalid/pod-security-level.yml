@@ -1,0 +1,4 @@
+# expected: one of ["restricted", "baseline", "privileged"]
+---
+pod_security:
+  level: strict

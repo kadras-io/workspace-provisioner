@@ -1,13 +1,18 @@
 ---
-# Without credentials, each workspace gets a namespace, an empty placeholder for the OCI registry credentials, and the ServiceAccounts with their roles.
+# Without credentials, each workspace gets a namespace enforcing the restricted Pod Security Standard,
+# an empty placeholder for the OCI registry credentials, and the GitOps ServiceAccount.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: dev
   labels:
     app.kubernetes.io/component: workspace-provisioner
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
   annotations:
     kapp.k14s.io/create-strategy: fallback-on-update
+    kapp.k14s.io/delete-strategy: orphan
 ---
 apiVersion: v1
 kind: Secret
@@ -19,40 +24,19 @@ metadata:
     kapp.k14s.io/create-strategy: fallback-on-update
 type: kubernetes.io/dockerconfigjson
 ---
+# The workloads pull their images with the `default` ServiceAccount, which is adopted and never deleted.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: supply-chain
+  name: default
   namespace: dev
   labels:
     app.kubernetes.io/component: workspace-provisioner
+  annotations:
+    kapp.k14s.io/create-strategy: fallback-on-update
+    kapp.k14s.io/delete-strategy: orphan
 imagePullSecrets:
   - name: canonical-registry-credentials
-(length(secrets)): 0
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: supply-chain-workload
-  namespace: dev
-roleRef:
-  kind: ClusterRole
-  name: supply-chain-workload
-subjects:
-  - kind: ServiceAccount
-    name: supply-chain
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: supply-chain-deliverable
-  namespace: dev
-roleRef:
-  kind: ClusterRole
-  name: supply-chain-deliverable
-subjects:
-  - kind: ServiceAccount
-    name: supply-chain
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -67,7 +51,7 @@ metadata:
   namespace: dev
 roleRef:
   kind: ClusterRole
-  name: cluster-admin
+  name: admin
 subjects:
   - kind: ServiceAccount
     name: gitops-reconciler

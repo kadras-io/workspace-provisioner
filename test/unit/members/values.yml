@@ -1,0 +1,14 @@
+namespaces:
+  - name: dev
+    members:
+      - name: team-a
+      - kind: Group
+        name: team-a-leads
+        role: admin
+      - kind: User
+        name: jane@example.com
+        role: edit
+      - kind: User
+        name: auditor@example.com
+        role: view
+  - name: prod

@@ -1,7 +1,9 @@
 #@ load("@ytt:data", "data")
-#@ load("/lib/workspace.star", "adopt_annotations", "labels")
+#@ load("/lib/workspace.star", "keep_annotations", "labels", "pod_security_labels")
 
-#! The namespace of each workspace. An existing namespace is adopted rather than recreated.
+#! The namespace of each workspace, with the Pod Security Standard enforced on it. An existing namespace is adopted
+#! rather than recreated. Removing a workspace, or uninstalling the package, keeps the namespace and the workloads in it.
+#! See: https://kubernetes.io/docs/concepts/security/pod-security-admission
 
 #@ for namespace in data.values.namespaces:
 ---
@@ -9,6 +11,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: #@ namespace.name
-  labels: #@ labels()
-  annotations: #@ adopt_annotations()
+  labels: #@ dict(labels(), **pod_security_labels(namespace))
+  annotations: #@ keep_annotations()
 #@ end

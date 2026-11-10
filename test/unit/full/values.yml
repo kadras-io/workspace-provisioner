@@ -5,10 +5,6 @@ oci:
   pull_secret:
     name: registry-credentials
     namespace: kadras-system
-cosign:
-  secret:
-    name: cosign-key-pair
-    namespace: kadras-system
 git:
   secret:
     name: git-credentials

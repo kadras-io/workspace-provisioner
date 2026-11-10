@@ -1,0 +1,7 @@
+---
+# The members are only bound in their workspace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: prod
+  (starts_with(name, 'workspace-')): true

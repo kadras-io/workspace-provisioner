@@ -1,0 +1,12 @@
+---
+# Uninstalling the package keeps the workspace namespace, with its workloads and default ServiceAccount.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-full
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+  namespace: test-full

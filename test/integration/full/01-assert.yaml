@@ -3,7 +3,7 @@
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
 metadata:
-  name: supply-chain-registry-credentials
+  name: registry-credentials
   namespace: kadras-system
 spec:
   toNamespaces:
@@ -12,13 +12,7 @@ spec:
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
 metadata:
-  name: supply-chain-cosign-key-pair
-  namespace: kadras-system
----
-apiVersion: secretgen.carvel.dev/v1alpha1
-kind: SecretExport
-metadata:
-  name: supply-chain-git-credentials
+  name: git-credentials
   namespace: kadras-system
 ---
 apiVersion: v1
@@ -27,6 +21,7 @@ metadata:
   name: test-full
   labels:
     app.kubernetes.io/component: workspace-provisioner
+    pod-security.kubernetes.io/enforce: restricted
 ---
 apiVersion: v1
 kind: Secret
@@ -41,17 +36,7 @@ type: kubernetes.io/dockerconfigjson
 apiVersion: v1
 kind: Secret
 metadata:
-  name: supply-chain-cosign-key-pair
-  namespace: test-full
-data:
-  cosign.key: a2V5
-  cosign.password: cGFzcw==
-  cosign.pub: cHVi
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: supply-chain-git-credentials
+  name: git-credentials
   namespace: test-full
 data:
   username: dXNlcg==
@@ -60,37 +45,10 @@ data:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: supply-chain
+  name: default
   namespace: test-full
-secrets:
-  - name: supply-chain-cosign-key-pair
-  - name: supply-chain-git-credentials
 imagePullSecrets:
   - name: canonical-registry-credentials
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: supply-chain-workload
-  namespace: test-full
-roleRef:
-  kind: ClusterRole
-  name: supply-chain-workload
-subjects:
-  - kind: ServiceAccount
-    name: supply-chain
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: supply-chain-deliverable
-  namespace: test-full
-roleRef:
-  kind: ClusterRole
-  name: supply-chain-deliverable
-subjects:
-  - kind: ServiceAccount
-    name: supply-chain
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -105,7 +63,29 @@ metadata:
   namespace: test-full
 roleRef:
   kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - kind: ServiceAccount
-    name: gitops-reconciler
+  name: admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-edit
+  namespace: test-full
+roleRef:
+  kind: ClusterRole
+  name: edit
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  # The GitOps ServiceAccount manages the workloads in the workspace, but nothing outside.
+  - script: test "$(kubectl auth can-i create deployments -n test-full --as=system:serviceaccount:test-full:gitops-reconciler)" = yes
+  - script: test "$(kubectl auth can-i create rolebindings -n test-full --as=system:serviceaccount:test-full:gitops-reconciler)" = yes
+  - script: test "$(kubectl auth can-i create deployments -n default --as=system:serviceaccount:test-full:gitops-reconciler)" = no
+  # The members of the group edit the workloads in the workspace, but not its access.
+  - script: test "$(kubectl auth can-i create deployments -n test-full --as=jane --as-group=team-a)" = yes
+  - script: test "$(kubectl auth can-i create rolebindings -n test-full --as=jane --as-group=team-a)" = no
+  # The restricted Pod Security Standard rejects privileged Pods.
+  - script: |
+      ! kubectl run privileged -n test-full --image=busybox --dry-run=server \
+        --overrides='{"spec":{"containers":[{"name":"privileged","image":"busybox","securityContext":{"privileged":true}}]}}' 2>&1 \
+        | tee /dev/stderr | grep -q 'created (server dry run)'

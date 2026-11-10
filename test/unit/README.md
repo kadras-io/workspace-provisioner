@@ -16,13 +16,18 @@ The documents in `assert.yaml` and `errors.yaml` use the [Chainsaw assertion syn
 
 ```yaml
 apiVersion: v1
-kind: ServiceAccount
+kind: Namespace
 metadata:
-  name: supply-chain
+  name: dev
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-edit
   namespace: dev
-imagePullSecrets:
-  - name: canonical-registry-credentials
-(length(secrets)): 0
+(length(subjects)): 2
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretImport

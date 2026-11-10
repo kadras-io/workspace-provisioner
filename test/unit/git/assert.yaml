@@ -8,22 +8,11 @@ spec:
   toNamespaces:
     - dev
 ---
-# The Tekton annotation scopes the credentials to the Git server.
+# The Git credentials are imported as they are, for the Flux sources in the workspace.
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretImport
 metadata:
   name: git-credentials
   namespace: dev
-  annotations:
-    tekton.dev/git-0: https://gitlab.com
-    kapp.k14s.io/create-strategy: fallback-on-update
 spec:
   fromNamespace: kadras-system
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: supply-chain
-  namespace: dev
-secrets:
-  - name: git-credentials

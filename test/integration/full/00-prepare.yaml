@@ -8,7 +8,7 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: supply-chain-registry-credentials
+  name: registry-credentials
   namespace: kadras-system
 type: kubernetes.io/dockerconfigjson
 data:
@@ -17,17 +17,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: supply-chain-cosign-key-pair
-  namespace: kadras-system
-stringData:
-  cosign.key: key
-  cosign.password: pass
-  cosign.pub: pub
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: supply-chain-git-credentials
+  name: git-credentials
   namespace: kadras-system
 stringData:
   username: user

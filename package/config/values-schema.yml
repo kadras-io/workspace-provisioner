@@ -1,8 +1,13 @@
-#@ load("/lib/validation.star", "is_dns_label", "is_dns_subdomain", "is_http_url", "is_secret_ref_complete")
+#@ load("/lib/validation.star", "is_dns_label", "is_secret_ref_complete")
 
 #@ def namespaces_unique(namespaces):
 #@   names = [namespace["name"] for namespace in namespaces]
 #@   return len(names) == len({name: None for name in names})
+#@ end
+
+#@ def members_unique(members):
+#@   subjects = [(member["kind"], member["name"]) for member in members]
+#@   return len(subjects) == len({subject: None for subject in subjects})
 #@ end
 
 #@data/values-schema
@@ -16,10 +21,33 @@ namespaces:
     #@schema/desc "The name of the namespace. It's created if it doesn't exist."
     #@schema/validation ("a valid DNS label", is_dns_label), min_len=1, max_len=63
     name: ""
+    #@schema/desc "The Pod Security Standard enforced on the namespace. When empty, `pod_security.level` applies."
+    #@schema/validation one_of=["", "restricted", "baseline", "privileged"]
+    pod_security: ""
+    #@schema/desc "The users and groups granted access to the workspace, each bound to one of the Kubernetes default roles in the namespace."
+    #@schema/validation ("unique members", members_unique)
+    members:
+      #@schema/desc "A user or group granted access to the workspace."
+      -
+        #@schema/desc "The kind of subject."
+        #@schema/validation one_of=["User", "Group"]
+        kind: Group
+        #@schema/desc "The name of the user or group, as authenticated by the Kubernetes API server, for example from an OIDC identity provider."
+        #@schema/validation min_len=1
+        name: ""
+        #@schema/desc "The Kubernetes default ClusterRole bound in the namespace: `admin` to also manage the access to the workspace, `edit` to manage the workloads, `view` for read-only access. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles."
+        #@schema/validation one_of=["admin", "edit", "view"]
+        role: edit
 
-#@schema/desc "The ServiceAccount to configure with credentials and roles in each workspace."
-#@schema/validation ("a valid DNS subdomain", is_dns_subdomain), min_len=1, max_len=253
-service_account: supply-chain
+#! =============================================
+#! Security
+#! =============================================
+
+#@schema/desc "Settings for the Pod Security Standards of the workspaces. See https://kubernetes.io/docs/concepts/security/pod-security-standards."
+pod_security:
+  #@schema/desc "The Pod Security Standard enforced on the workspaces by default. Pods violating it are rejected. Violations of the `restricted` standard are always reported as warnings and in the audit log."
+  #@schema/validation one_of=["restricted", "baseline", "privileged"]
+  level: restricted
 
 #! =============================================
 #! Credentials
@@ -35,21 +63,8 @@ oci:
     #@schema/desc "The namespace of the Secret holding the credentials to pull images from the OCI registry."
     namespace: ""
 
-#@schema/desc "Settings for Cosign, used to sign and verify OCI artifacts from the workspaces."
-cosign:
-  #@schema/desc "The Secret holding the Cosign key pair, shared with the workspaces."
-  #@schema/validation ("both `name` and `namespace` to be set, or neither", is_secret_ref_complete)
-  secret:
-    #@schema/desc "The name of the Secret holding the Cosign key pair. See docs/credentials.md for the expected format."
-    name: ""
-    #@schema/desc "The namespace of the Secret holding the Cosign key pair."
-    namespace: ""
-
-#@schema/desc "Settings for accessing the Git repositories used in the GitOps workflows from the workspaces."
+#@schema/desc "Settings for accessing the Git repositories from the workspaces, for example by the Flux sources."
 git:
-  #@schema/desc "The Git server hosting the Git repositories used in the GitOps workflows."
-  #@schema/validation ("an HTTP or HTTPS URL, like `https://github.com`", is_http_url)
-  server: https://github.com
   #@schema/desc "The Secret holding the Git credentials, shared with the workspaces."
   #@schema/validation ("both `name` and `namespace` to be set, or neither", is_secret_ref_complete)
   secret:

@@ -1,46 +1,14 @@
 #@ load("@ytt:data", "data")
-#@ load("/lib/workspace.star", "adopt_annotations", "image_pull_secret_name", "is_cosign_secret_set", "is_git_secret_set", "labels")
+#@ load("/lib/workspace.star", "adopt_annotations", "labels", "members_by_role")
 
-#! The ServiceAccounts of each workspace, with their credentials and roles.
+#! The access to each workspace, granted via the Kubernetes default roles, bound in the namespace. The platform packages
+#! extend them with the permissions on their resources via aggregation, like Knative Serving and Flux.
+#! See: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
 
 #@ for namespace in data.values.namespaces:
 
-#! The supply chains run with this ServiceAccount, bound to the ClusterRoles provided by the Kadras Engineering Platform.
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: #@ data.values.service_account
-  namespace: #@ namespace.name
-  labels: #@ labels()
-  annotations: #@ adopt_annotations()
-secrets:
-  #@ if/end is_cosign_secret_set():
-  - name: #@ data.values.cosign.secret.name
-  #@ if/end is_git_secret_set():
-  - name: #@ data.values.git.secret.name
-imagePullSecrets:
-  - name: #@ image_pull_secret_name
-
-#@ for role in ["supply-chain-workload", "supply-chain-deliverable"]:
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: #@ role
-  namespace: #@ namespace.name
-  labels: #@ labels()
-  annotations: #@ adopt_annotations()
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: #@ role
-subjects:
-  - kind: ServiceAccount
-    name: #@ data.values.service_account
-#@ end
-
-#! The GitOps tools deploy the workloads in the workspace with this ServiceAccount.
+#! The GitOps tools deploy the workloads in the workspace with this ServiceAccount, like Flux Kustomizations
+#! via `spec.serviceAccountName`. It can manage the workloads and the access to the workspace, but nothing outside.
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -48,6 +16,7 @@ metadata:
   name: gitops-reconciler
   namespace: #@ namespace.name
   labels: #@ labels()
+  annotations: #@ adopt_annotations()
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -56,12 +25,35 @@ metadata:
   name: gitops-reconciler
   namespace: #@ namespace.name
   labels: #@ labels()
+  annotations: #@ adopt_annotations()
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  name: admin
 subjects:
   - kind: ServiceAccount
     name: gitops-reconciler
+
+#! The members of the workspace, with a RoleBinding for each role.
+#@ for role, members in members_by_role(namespace).items():
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: #@ "workspace-" + role
+  namespace: #@ namespace.name
+  labels: #@ labels()
+  annotations: #@ adopt_annotations()
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: #@ role
+subjects:
+#@ for member in members:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: #@ member.kind
+    name: #@ member.name
+#@ end
+#@ end
 
 #@ end

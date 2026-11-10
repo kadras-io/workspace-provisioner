@@ -1,24 +1,26 @@
 ---
-# Uninstalling the package deletes the workspace namespace and the SecretExports, but not the shared credentials.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test-full
----
+# Uninstalling the package deletes the SecretExports and the access configuration of the workspace,
+# but not the shared credentials.
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
 metadata:
-  name: supply-chain-registry-credentials
+  name: registry-credentials
   namespace: kadras-system
 ---
 apiVersion: secretgen.carvel.dev/v1alpha1
 kind: SecretExport
 metadata:
-  name: supply-chain-cosign-key-pair
+  name: git-credentials
   namespace: kadras-system
 ---
-apiVersion: secretgen.carvel.dev/v1alpha1
-kind: SecretExport
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
 metadata:
-  name: supply-chain-git-credentials
-  namespace: kadras-system
+  name: gitops-reconciler
+  namespace: test-full
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-edit
+  namespace: test-full

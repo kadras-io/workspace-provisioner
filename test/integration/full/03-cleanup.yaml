@@ -1,0 +1,8 @@
+---
+# Removes the workspace namespace, which the uninstallation kept.
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+  - apiVersion: v1
+    kind: Namespace
+    name: test-full

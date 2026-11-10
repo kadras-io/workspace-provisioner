@@ -10,17 +10,19 @@ A Carvel package that provisions namespaces as workspaces for the platform users
 
 ## ✨&nbsp; What's Included
 
-* **Namespaces**. Each namespace in `namespaces` is created, or adopted if it already exists.
-* **Credentials**. The OCI registry, Cosign, and Git credentials are shared from a central namespace with all the workspaces, via [secretgen-controller](https://github.com/carvel-dev/secretgen-controller).
-* **ServiceAccounts**. A ServiceAccount for the supply chains, with the credentials and the supply chain roles, and one for the GitOps reconciliation.
+* **Namespaces**. Each namespace in `namespaces` is created, or adopted if it already exists. Removing a workspace, or uninstalling the package, keeps the namespace and the workloads in it.
+* **Pod Security**. The `restricted` [Pod Security Standard](https://kubernetes.io/docs/concepts/security/pod-security-standards/) is enforced on each workspace, unless configured otherwise.
+* **Access**. Users and groups are granted access to each workspace via the Kubernetes default roles: `admin`, `edit`, and `view`. A `gitops-reconciler` ServiceAccount deploys the workloads via GitOps.
+* **Credentials**. The OCI registry and Git credentials are shared from a central namespace with all the workspaces, via [secretgen-controller](https://github.com/carvel-dev/secretgen-controller). The workloads pull their images with the OCI registry credentials.
 
 | Resource | In each workspace |
 |----------|-------------------|
 | `Namespace` | Always |
 | `Secret` `canonical-registry-credentials` | Always, populated when `oci.pull_secret` is set |
-| `SecretImport` | When `cosign.secret` or `git.secret` is set |
-| `ServiceAccount` and `RoleBinding`s for the supply chains | Always |
+| `ServiceAccount` `default`, with the image pull secret | Always |
+| `SecretImport` | When `git.secret` is set |
 | `ServiceAccount` and `RoleBinding` `gitops-reconciler` | Always |
+| `RoleBinding` `workspace-<role>` | For each role bound to the `members` |
 
 For each credential, a `SecretExport` is created next to its Secret, in the central namespace.
 
@@ -40,8 +42,6 @@ kapp deploy -a kapp-controller -y \
 ### Dependencies
 
 Workspace Provisioner requires [secretgen-controller](https://github.com/carvel-dev/secretgen-controller) to share the credentials with the workspaces. You can install it with the [secretgen-controller](https://github.com/kadras-io/package-for-secretgen-controller) package from the [Kadras package repository](https://github.com/kadras-io/kadras-packages).
-
-The supply chain roles bound in each workspace, `supply-chain-workload` and `supply-chain-deliverable`, are provided by the Kadras [Engineering Platform](https://github.com/kadras-io/engineering-platform), of which Workspace Provisioner is part.
 
 ### Installation
 
@@ -120,11 +120,11 @@ kctrl package install -i workspace-provisioner \
   --values-file values.yml
 ```
 
-Check that the credentials are available in the workspace, attached to the supply chain ServiceAccount:
+Check that the credentials are available in the workspace, attached to the `default` ServiceAccount:
 
 ```shell
 kubectl get secret canonical-registry-credentials -n dev -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode
-kubectl get serviceaccount supply-chain -n dev -o yaml
+kubectl get serviceaccount default -n dev -o yaml
 ```
 
 ## 📙&nbsp; Documentation
@@ -132,7 +132,7 @@ kubectl get serviceaccount supply-chain -n dev -o yaml
 Documentation, tutorials and examples for this package are available in the [docs](docs) folder.
 For documentation specific to the Kadras Engineering Platform, check out [kadras.io](https://kadras.io).
 
-* [Workspaces and permissions](docs/workspaces.md)
+* [Workspaces, access, and Pod Security](docs/workspaces.md)
 * [Credentials](docs/credentials.md)
 * [Configuration and ytt overlays](docs/configuration.md)
 * [Upgrading and uninstalling](docs/upgrade.md)
@@ -144,12 +144,17 @@ The Workspace Provisioner package can be customized via a `values.yml` file.
 
 ```yaml
 namespaces:
-  - name: qa
-  - name: staging
+  - name: team-a
+    members:
+      - kind: Group
+        name: team-a-developers
+        role: edit
+  - name: legacy
+    pod_security: baseline
 
 oci:
   pull_secret:
-    name: supply-chain-registry-credentials
+    name: registry-credentials
     namespace: kadras-system
 ```
 
@@ -177,12 +182,14 @@ The Workspace Provisioner package has the following configurable properties.
 |--------|---------|-------------|
 | `namespaces` | `[]` | The namespaces to provision and configure as workspaces. |
 | `namespaces[].name` | `""` | The name of the namespace. It's created if it doesn't exist. |
-| `service_account` | `"supply-chain"` | The ServiceAccount to configure with credentials and roles in each workspace. |
+| `namespaces[].pod_security` | `""` | The Pod Security Standard enforced on the namespace. When empty, `pod_security.level` applies. |
+| `namespaces[].members` | `[]` | The users and groups granted access to the workspace, each bound to one of the Kubernetes default roles in the namespace. |
+| `namespaces[].members[].kind` | `"Group"` | The kind of subject. |
+| `namespaces[].members[].name` | `""` | The name of the user or group, as authenticated by the Kubernetes API server, for example from an OIDC identity provider. |
+| `namespaces[].members[].role` | `"edit"` | The Kubernetes default ClusterRole bound in the namespace: `admin` to also manage the access to the workspace, `edit` to manage the workloads, `view` for read-only access. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles. |
+| `pod_security.level` | `"restricted"` | The Pod Security Standard enforced on the workspaces by default. Pods violating it are rejected. Violations of the `restricted` standard are always reported as warnings and in the audit log. |
 | `oci.pull_secret.name` | `""` | The name of the Secret holding the credentials to pull images from the OCI registry. See docs/credentials.md for the expected format. |
 | `oci.pull_secret.namespace` | `""` | The namespace of the Secret holding the credentials to pull images from the OCI registry. |
-| `cosign.secret.name` | `""` | The name of the Secret holding the Cosign key pair. See docs/credentials.md for the expected format. |
-| `cosign.secret.namespace` | `""` | The namespace of the Secret holding the Cosign key pair. |
-| `git.server` | `"https://github.com"` | The Git server hosting the Git repositories used in the GitOps workflows. |
 | `git.secret.name` | `""` | The name of the Secret holding the Git credentials. See docs/credentials.md for the expected format. |
 | `git.secret.namespace` | `""` | The namespace of the Secret holding the Git credentials. |
 

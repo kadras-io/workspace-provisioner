@@ -1,0 +1,9 @@
+# expected: unique members
+---
+namespaces:
+  - name: dev
+    members:
+      - name: team-a
+        role: edit
+      - name: team-a
+        role: view

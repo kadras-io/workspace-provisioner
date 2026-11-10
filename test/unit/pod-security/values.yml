@@ -1,0 +1,7 @@
+#! The baseline standard is enforced by default, and the privileged one on a single workspace.
+namespaces:
+  - name: dev
+  - name: system
+    pod_security: privileged
+pod_security:
+  level: baseline
